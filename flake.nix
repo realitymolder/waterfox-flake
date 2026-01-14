@@ -1,5 +1,5 @@
 {
-  description = "Zen Browser";
+  description = "Waterfox";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   inputs.home-manager = {
@@ -14,7 +14,6 @@
   }: let
     supportedSystems = [
       "x86_64-linux"
-      "aarch64-linux"
       "aarch64-darwin"
     ];
 
@@ -28,19 +27,11 @@
     formatter = forAllSystems (pkgs: pkgs.alejandra);
 
     homeModules = {
-      beta = import ./hm-module.nix {
+      waterfox = import ./hm-module.nix {
         inherit self home-manager;
-        name = "beta";
+        name = "main";
       };
-      twilight = import ./hm-module.nix {
-        inherit self home-manager;
-        name = "twilight";
-      };
-      twilight-official = import ./hm-module.nix {
-        inherit self home-manager;
-        name = "twilight-official";
-      };
-      default = self.homeModules.beta;
+      default = self.homeModules.waterfox;
     };
   };
 }
