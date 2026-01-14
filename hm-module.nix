@@ -26,17 +26,10 @@
     "waterfox"
   ];
 
-  linuxConfigPath = ".waterfox";
-  darwinConfigPath = "Library/Application Support/Waterfox";
+   linuxConfigPath = ".waterfox";
+   darwinConfigPath = "Library/Application Support/Waterfox";
 
-  # Actual profile directory path where places.sqlite is located
-  profilePath = "${(
-    if pkgs.stdenv.isDarwin
-    then "${darwinConfigPath}/Profiles"
-    else linuxConfigPath
-  )}";
-
-  mkFirefoxModule = import "${home-manager.outPath}/modules/programs/firefox/mkFirefoxModule.nix";
+   mkFirefoxModule = import "${home-manager.outPath}/modules/programs/firefox/mkFirefoxModule.nix";
 in {
   imports = [
     (mkFirefoxModule {

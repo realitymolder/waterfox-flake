@@ -6,6 +6,7 @@ This is a nix flake for the Waterfox browser.
 
 - Linux and macOS support
 - Available for _x86_64_ on Linux and _aarch64_ on macOS
+- **Note**: aarch64-linux is not supported by Waterfox
 - [Policies can be modified via Home Manager and unwrapped package override](#policies)
 - Fast & Automatic updates via GitHub Actions
 - Browser update checks are disabled by default
@@ -17,7 +18,7 @@ Just add it to your NixOS `flake.nix` or home-manager:
 ```nix
 inputs = {
   waterfox = {
-    url = "github:your-repo/waterfox-flake";
+    url = "github:realitymolder/waterfox-flake";
     inputs = {
       nixpkgs.follows = "nixpkgs";
       home-manager.follows = "home-manager";

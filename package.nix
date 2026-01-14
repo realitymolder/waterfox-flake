@@ -25,7 +25,7 @@
   fetchzip,
   makeDesktopItem,
   copyDesktopItems,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
+   patchelfUnstable, # Required for Firefox-based patching (--no-clobber-old-sections)
   applicationName ? "Waterfox",
 }: let
   binaryName = "waterfox";
