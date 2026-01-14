@@ -205,6 +205,7 @@ in
     preFixup = lib.optionals stdenv.hostPlatform.isLinux ''
       gappsWrapperArgs+=(
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ffmpeg_7]}"
+        --set MOZ_APP_NAME ${binaryName}
         --add-flags "--name=''${MOZ_APP_LAUNCHER:-${binaryName}}"
         --add-flags "--class=''${MOZ_APP_LAUNCHER:-${binaryName}}"
       )
