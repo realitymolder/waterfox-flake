@@ -65,12 +65,25 @@ update_version() {
 
     if [ "$os" = "darwin" ]; then
         download_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Darwin_x86_64-aarch64/Waterfox%20$current_version.dmg"
-        prefetch_output=$(nix store prefetch-file --hash-type sha256 --json "$download_url")
+        # Download and compute hash manually to avoid nix prefetch issues with spaces in filename
+        tmp_dir=$(mktemp -d)
+        curl -sL "$download_url" -o "$tmp_dir/waterfox.dmg"
+        sha256=$(sha256sum "$tmp_dir/waterfox.dmg" | cut -d' ' -f1)
+        sha256="sha256-$sha256"
+        rm -rf "$tmp_dir"
     else
         download_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Linux_x86_64/waterfox-$current_version.tar.bz2"
-        prefetch_output=$(nix store prefetch-file --unpack --hash-type sha256 --json "$download_url")
+        prefetch_output=$(nix store prefetch-file --unpack --hash-type sha256 --json "$download_url" 2>&1)
+        
+        # Handle errors
+        if echo "$prefetch_output" | grep -q "error:"; then
+            echo "Error fetching $download_url:"
+            echo "$prefetch_output"
+            exit 1
+        fi
+        
+        sha256=$(echo "$prefetch_output" | jq -r '.hash')
     fi
-    sha256=$(echo "$prefetch_output" | jq -r '.hash')
 
     jq ".[\"main\"][\"$arch-$os\"] = {\"version\":\"$current_version\",\"url\":\"$download_url\",\"sha256\":\"$sha256\"}" <sources.json >sources.json.tmp
     mv sources.json.tmp sources.json
