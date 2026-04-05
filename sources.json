@@ -1,14 +1,14 @@
 {
   "main": {
     "x86_64-linux": {
-      "version": "6.6.8",
-      "url": "https://cdn.waterfox.com/waterfox/releases/6.6.8/Linux_x86_64/waterfox-6.6.8.tar.bz2",
-      "sha256": "sha256-TzCQxuw9xfq86VwR2ZVoB357SDGZVt4TiKkNzzOXWik="
+      "version": "6.6.10",
+      "url": "https://cdn.waterfox.com/waterfox/releases/6.6.10/Linux_x86_64/waterfox-6.6.10.tar.bz2",
+      "sha256": "sha256-fiaW/0u0K1k+DCHZVePhcs8EzLzvp5x6Gw+qady9LVE="
     },
     "aarch64-darwin": {
-      "version": "6.6.8",
-      "url": "https://cdn.waterfox.com/waterfox/releases/6.6.8/Darwin_x86_64-aarch64/Waterfox%206.6.8.dmg",
-      "sha256": "sha256-Nyd7AXgowlvdsefQGejOH//d1TPxHX71j61/K+rLJNA="
+      "version": "6.6.10",
+      "url": "https://cdn.waterfox.com/waterfox/releases/6.6.10/Darwin_x86_64-aarch64/Waterfox%206.6.10.dmg",
+      "sha256": "sha256-188bce7630321b0bfedb44b45125ab0fb1373f03c08f19b288ad851f2906340e"
     }
   }
 }
