@@ -13,7 +13,21 @@ fi
 # Get latest Waterfox release
 curl -sL -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/BrowserWorks/Waterfox/releases/latest" > /tmp/latest_release.json
+
+# Check if curl succeeded
+if [ ! -s /tmp/latest_release.json ]; then
+    echo "Error: Failed to fetch latest release from GitHub API"
+    exit 1
+fi
+
 latest_release=$(cat /tmp/latest_release.json)
+
+# Debug: verify we got valid JSON
+if ! echo "$latest_release" | jq -e . >/dev/null 2>&1; then
+    echo "Error: Invalid JSON from GitHub API"
+    echo "$latest_release"
+    exit 1
+fi
 
 get_latest_version() {
     version=$(echo "$latest_release" | jq -r '.tag_name // empty')
@@ -26,6 +40,8 @@ get_latest_updated_at() {
 
 current_version=$(get_latest_version)
 current_updated_at=$(get_latest_updated_at)
+
+echo "DEBUG: Fetched version: '$current_version'"
 
 commit_targets=""
 commit_version=""
