@@ -11,10 +11,13 @@ if echo "$@" | grep -qoE '(--only-check)'; then
 fi
 
 # Get latest Waterfox release
-latest_release=$(curl -s 'https://api.github.com/repos/BrowserWorks/Waterfox/releases/latest')
+curl -sL -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/BrowserWorks/Waterfox/releases/latest" > /tmp/latest_release.json
+latest_release=$(cat /tmp/latest_release.json)
 
 get_latest_version() {
-    echo "$latest_release" | jq -r '.tag_name'
+    version=$(echo "$latest_release" | jq -r '.tag_name // empty')
+    echo "${version#v}"
 }
 
 get_latest_updated_at() {
