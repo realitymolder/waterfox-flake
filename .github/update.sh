@@ -34,6 +34,9 @@ get_latest_updated_at() {
 current_version=$(get_latest_version)
 current_updated_at=$(get_latest_updated_at)
 
+echo "DEBUG: current_version='$current_version'"
+echo "DEBUG: latest_release='$latest_release'"
+
 commit_targets=""
 commit_version=""
 
