@@ -20,22 +20,22 @@ if [ ! -s /tmp/latest_release.json ]; then
     exit 1
 fi
 
-latest_release=$(cat /tmp/latest_release.json)
+# Extract only the fields we need to avoid jq parse errors from control characters in body
+latest_tag=$(jq -r '.tag_name // empty' /tmp/latest_release.json)
+latest_published=$(jq -r '.published_at // empty' /tmp/latest_release.json)
+
+echo "DEBUG: latest_tag='$latest_tag'"
 
 get_latest_version() {
-    version=$(echo "$latest_release" | jq -r '.tag_name // empty')
-    echo "${version#v}"
+    echo "${latest_tag#v}"
 }
 
 get_latest_updated_at() {
-    echo "$latest_release" | jq -r '.published_at'
+    echo "$latest_published"
 }
 
 current_version=$(get_latest_version)
 current_updated_at=$(get_latest_updated_at)
-
-echo "DEBUG: current_version='$current_version'"
-echo "DEBUG: latest_release='$latest_release'"
 
 commit_targets=""
 commit_version=""
