@@ -22,13 +22,6 @@ fi
 
 latest_release=$(cat /tmp/latest_release.json)
 
-# Debug: verify we got valid JSON
-if ! echo "$latest_release" | jq -e . >/dev/null 2>&1; then
-    echo "Error: Invalid JSON from GitHub API"
-    echo "$latest_release"
-    exit 1
-fi
-
 get_latest_version() {
     version=$(echo "$latest_release" | jq -r '.tag_name // empty')
     echo "${version#v}"
@@ -40,8 +33,6 @@ get_latest_updated_at() {
 
 current_version=$(get_latest_version)
 current_updated_at=$(get_latest_updated_at)
-
-echo "DEBUG: Fetched version: '$current_version'"
 
 commit_targets=""
 commit_version=""
