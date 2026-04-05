@@ -1,4 +1,4 @@
-name: Update Zen Browser
+name: Update Waterfox
 
 on:
   workflow_dispatch:
@@ -6,8 +6,8 @@ on:
     - cron: "0 * * * *"
 
 jobs:
-  update-zen-browser:
-    name: Update Zen Browser
+  update-waterfox:
+    name: Update Waterfox
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,7 +18,7 @@ jobs:
       - name: Check if update is needed
         id: check
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           .github/update.sh --ci --only-check
 
@@ -37,7 +37,7 @@ jobs:
         id: update
         if: steps.check.outputs.should_update == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           .github/update.sh --ci
 
@@ -53,11 +53,11 @@ jobs:
       should_rebase_beta: ${{ steps.update.outputs.should_rebase_beta }}
 
   test-build:
-    if: needs.update-zen-browser.outputs.success == 'true'
+    if: needs.update-waterfox.outputs.success == 'true'
     continue-on-error: false
     name: Test package build
     runs-on: ubuntu-latest
-    needs: update-zen-browser
+    needs: update-waterfox
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -77,10 +77,10 @@ jobs:
           done
 
   rebase-beta:
-    if: needs.update-zen-browser.outputs.should_rebase_beta == 'true'
+    if: needs.update-waterfox.outputs.should_rebase_beta == 'true'
     name: Rebase beta branch from main
     runs-on: ubuntu-latest
-    needs: update-zen-browser
+    needs: update-waterfox
     permissions:
       contents: write
     steps:

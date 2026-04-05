@@ -28,8 +28,8 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 ## System Information
-- **OS**: (e.g. NixOS, Ubuntu, etc)
-- **Zen Browser version**: (e.g. twilight, beta)
+- **OS**: (e.g. NixOS, macOS, etc)
+- **Waterfox version**: (e.g. 6.6.8)
 - **Desktop environment / Compositor / WM**: (e.g. KDE, GNOME, Hyprland)
 
 ## Additional context

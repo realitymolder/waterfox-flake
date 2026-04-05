@@ -25,26 +25,15 @@
   fetchzip,
   makeDesktopItem,
   copyDesktopItems,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
-  applicationName ?
-    "Zen Browser"
-    + (
-      if name == "beta"
-      then " (Beta)"
-      else if name == "twilight"
-      then " (Twilight)"
-      else if name == "twilight-official"
-      then " (Twilight)"
-      else ""
-    ),
+   patchelfUnstable, # Required for Firefox-based patching (--no-clobber-old-sections)
+  applicationName ? "Waterfox",
 }: let
-  binaryName = "zen-${name}";
+  binaryName = "waterfox";
 
-  libName = "zen-bin-${variant.version}";
+  libName = "waterfox-bin-${variant.version}";
 
   mozillaPlatforms = {
     x86_64-linux = "linux-x86_64";
-    aarch64-linux = "linux-aarch64";
     aarch64-darwin = "darwin-aarch64";
   };
 
@@ -54,28 +43,24 @@
 
   policiesJson = writeText "firefox-policies.json" (builtins.toJSON {policies = firefoxPolicies;});
 
-  pname = "zen-${name}-bin-unwrapped";
+  pname = "waterfox-${name}-bin-unwrapped";
 
-  desktopIconName =
-    if name == "beta"
-    then "zen-browser"
-    else binaryName;
+  desktopIconName = binaryName;
 
   installDarwin = ''
     runHook preInstall
 
     mkdir -p "$out/Applications" "$out/bin"
     cp -r *.app "$out/Applications/${applicationName}.app"
-    ln -s zen "$out/Applications/${applicationName}.app/Contents/MacOS/${binaryName}"
+    ln -s waterfox "$out/Applications/${applicationName}.app/Contents/MacOS/${binaryName}"
 
     # Install policies.json for macOS
     mkdir -p "$out/Applications/${applicationName}.app/Contents/Resources/distribution"
     ln -s ${policiesJson} "$out/Applications/${applicationName}.app/Contents/Resources/distribution/policies.json"
 
-    # Re-sign with correct identifier to maintain AdGuard compatibility
-    # AdGuard uses code signing identifier (not CFBundleIdentifier) to recognize apps
+    # Re-sign with correct identifier to maintain compatibility
     /usr/bin/codesign --force --deep --sign - \
-      --identifier "app.zen-browser.zen" \
+      --identifier "app.waterfox.waterfox" \
       "$out/Applications/${applicationName}.app"
 
     # Use symlink path to avoid installs.ini accumulation on Nix rebuilds
@@ -93,7 +78,7 @@
     EOF
 
     chmod +x "$out/bin/${binaryName}"
-    ln -s "$out/bin/${binaryName}" "$out/bin/zen"
+    ln -s "$out/bin/${binaryName}" "$out/bin/waterfox"
 
     runHook postInstall
   '';
@@ -102,12 +87,11 @@
     runHook preInstall
 
     # Linux tarball installation
-    mkdir -p "$prefix/lib/${libName}"
-    cp -r "$src"/* "$prefix/lib/${libName}"
+    mkdir -p "$out/lib/${libName}"
+    cp -r "$src"/* "$out/lib/${libName}"
 
     mkdir -p "$out/bin"
-    ln -s "$prefix/lib/${libName}/zen" "$out/bin/${binaryName}"
-    ln -s "$out/bin/${binaryName}" "$out/bin/zen"
+    ln -s "$out/lib/${libName}/waterfox" "$out/bin/${binaryName}"
 
     mkdir -p "$out/lib/${libName}/distribution"
     ln -s ${policiesJson} "$out/lib/${libName}/distribution/policies.json"
@@ -143,7 +127,7 @@ in
     desktopItems = [
       (makeDesktopItem {
         name = binaryName;
-        desktopName = "Zen Browser${lib.optionalString (name == "twilight") " Twilight"}";
+        desktopName = "Waterfox";
         exec = "${binaryName} %u";
         icon =
           if icon != null && (lib.isString icon || lib.isPath icon)
@@ -183,7 +167,6 @@ in
         };
       })
     ];
-
     nativeBuildInputs =
       lib.optionals stdenv.hostPlatform.isLinux [
         wrapGAppsHook3
@@ -219,9 +202,10 @@ in
     # Firefox uses "relrhack" to manually process relocations from a fixed offset
     patchelfFlags = ["--no-clobber-old-sections"];
 
-    preFixup = ''
+    preFixup = lib.optionals stdenv.hostPlatform.isLinux ''
       gappsWrapperArgs+=(
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ffmpeg_7]}"
+        --set MOZ_APP_NAME ${binaryName}
         --add-flags "--name=''${MOZ_APP_LAUNCHER:-${binaryName}}"
         --add-flags "--class=''${MOZ_APP_LAUNCHER:-${binaryName}}"
       )
@@ -235,15 +219,15 @@ in
     passthru = {
       inherit applicationName binaryName libName;
       ffmpegSupport = true;
-      gssSupport = true;
+      gssSupport = false;
       gtk3 = gtk3;
     };
 
     meta = {
-      description = "Experience tranquillity while browsing the web without people tracking you!";
-      homepage = "https://zen-browser.app";
-      downloadPage = "https://zen-browser.app/download/";
-      changelog = "https://github.com/zen-browser/desktop/releases";
+      description = "A privacy-focused Firefox-based browser";
+      homepage = "https://www.waterfox.com";
+      downloadPage = "https://www.waterfox.com/download/";
+      changelog = "https://github.com/BrowserWorks/Waterfox/releases";
       sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
       platforms = builtins.attrNames mozillaPlatforms;
       hydraPlatforms = [];

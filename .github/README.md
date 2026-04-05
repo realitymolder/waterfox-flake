@@ -1,17 +1,15 @@
-# Zen Browser
+# Waterfox
 
-This is a nix flake for the Zen browser.
+This is a nix flake for the Waterfox browser.
 
 ## Features
 
-- Linux and MacOS support
-- Available for _x86_64_ and _aarch64_
-- Support for _twilight_ and _beta_
+- Linux and macOS support
+- Available for _x86_64_ on Linux and _aarch64_ on macOS
+- **Note**: aarch64-linux is not supported by Waterfox
 - [Policies can be modified via Home Manager and unwrapped package override](#policies)
 - Fast & Automatic updates via GitHub Actions
 - Browser update checks are disabled by default
-- The default twilight version is reliable and reproducible
-- [Declarative \[Work\]Spaces (including themes, icons, containers)](#spaces)
 
 ## Installation
 
@@ -19,11 +17,9 @@ Just add it to your NixOS `flake.nix` or home-manager:
 
 ```nix
 inputs = {
-  zen-browser = {
-    url = "github:0xc000022070/zen-browser-flake";
+  waterfox = {
+    url = "github:realitymolder/waterfox-flake";
     inputs = {
-      # IMPORTANT: we're using "libgbm" and is only available in unstable so ensure
-      # to have it up-to-date or simply don't specify the nixpkgs input
       nixpkgs.follows = "nixpkgs";
       home-manager.follows = "home-manager";
     };
@@ -32,16 +28,7 @@ inputs = {
 }
 ```
 
-> [!NOTE]
-> **Beta Branch**: To keep the flake input only sync with beta updates, use
-> `inputs.zen-browser.url = "github:0xc000022070/zen-browser-flake/beta"`.
-
 ### Integration
-
-> [!IMPORTANT]
-> Use the **twilight** package to guarantee reproducibility, the artifacts of
-> that package are re-uploaded to this repository. However, if you don't agree
-> with that and want to use the official artifacts, use **twilight-official**.
 
 <details>
 <summary><h4>Home Manager</h4></summary>
@@ -50,12 +37,10 @@ inputs = {
 {
   # home.nix
   imports = [
-    inputs.zen-browser.homeModules.beta
-    # or inputs.zen-browser.homeModules.twilight
-    # or inputs.zen-browser.homeModules.twilight-official
+    inputs.waterfox.homeModules.waterfox
   ];
 
-  programs.zen-browser.enable = true;
+  programs.waterfox.enable = true;
 }
 ```
 
@@ -74,21 +59,16 @@ Check the [Home Manager Reference](#home-manager-reference) and my rice
 <details>
 <summary><h4>With environment.systemPackages or home.packages</h4></summary>
 
-To integrate `Zen Browser` to your NixOS/Home Manager configuration, add the
+To integrate `Waterfox` to your NixOS/Home Manager configuration, add the
 following to your `environment.systemPackages` or `home.packages`:
 
 ```nix
-# options are: 'x86_64-linux', 'aarch64-linux' and 'aarch64-darwin'
+# supported systems: 'x86_64-linux' and 'aarch64-darwin'
 
-inputs.zen-browser.packages."${system}".default # beta
-inputs.zen-browser.packages."${system}".beta
-inputs.zen-browser.packages."${system}".twilight
-# IMPORTANT: this package relies on the twilight release artifacts from the
-# official zen repo and those artifacts are always replaced, causing hash mismatch
-inputs.zen-browser.packages."${system}".twilight-official
+inputs.waterfox.packages."${system}".default
 
 # you can even override the package policies
-inputs.zen-browser.packages."${system}".default.override {
+inputs.waterfox.packages."${system}".default.override {
   policies = {
       DisableAppUpdate = true;
       DisableTelemetry = true;
@@ -108,8 +88,7 @@ $ sudo nixos-rebuild switch # or home-manager switch
 ### Start the browser
 
 ```shell
-# it's a symlink, if you install two versions they will collide and you should either specify "zen-twilight" or "zen-beta"
-$ zen
+$ waterfox
 ```
 
 ## Home Manager reference
@@ -119,7 +98,7 @@ This is only an attempt to document some of the options provided by the
 module, so feel free to experiment with other program options and help with
 further documentation.
 
-`programs.zen-browser.*`
+`programs.waterfox.*`
 
 - `enable` (_boolean_): Enable the home manager config.
 
@@ -131,7 +110,7 @@ further documentation.
   ```nix
   {
     # Add any other native connectors here
-    programs.zen-browser.nativeMessagingHosts = [pkgs.firefoxpwa];
+    programs.waterfox.nativeMessagingHosts = [pkgs.firefoxpwa];
   }
   ```
 
@@ -139,14 +118,14 @@ further documentation.
 
 > [!IMPORTANT]\
 > If you're on macOS you'll need to configure
-> [programs.zen-browser.darwinDefaultsId](https://home-manager-options.extranix.com/?query=programs.firefox.darwinDefaultsId&release=master)
+> [programs.waterfox.darwinDefaultsId](https://home-manager-options.extranix.com/?query=programs.firefox.darwinDefaultsId&release=master)
 > first.
 
 ### Some common policies
 
 ```nix
 {
-  programs.zen-browser.policies = {
+  programs.waterfox.policies = {
     AutofillAddressEnabled = true;
     AutofillCreditCardEnabled = false;
     DisableAppUpdate = true;
@@ -169,18 +148,11 @@ further documentation.
 
 For more policies [read this](https://mozilla.github.io/policy-templates/).
 
-##### Zen-specific preferences
-
-Check
-[this comment](https://github.com/0xc000022070/zen-browser-flake/issues/59#issuecomment-2964607780).
-
 - profiles:
   - [extensions](#extensions)
   - [search](#search)
   - [preferences](#preferences)
   - [bookmarks](#bookmarks)
-  - [spaces](#spaces)
-  - [pinned tabs](#pinned-tabs-pins)
   - [userChrome](#userchromecss)
 
 ### Extensions
@@ -199,7 +171,7 @@ inputs = {
 
 ```nix
 {
-  programs.zen-browser.profiles.*.extensions.packages = 
+  programs.waterfox.profiles.*.extensions.packages =
      with inputs.firefox-addons.packages.${pkgs.stdenv.hostPlatform.system}; [
           ublock-origin
           dearrow
@@ -232,7 +204,7 @@ You can search for package names by going to
 
 ```nix
 {
-   programs.zen-browser.profiles.*.search = {
+   programs.waterfox.profiles.*.search = {
         force = true; # Needed for nix to overwrite search settings on rebuild
         default = "ddg"; # Aliased to duckduckgo, see other aliases in the link above
         engines = {
@@ -264,7 +236,7 @@ You can search for package names by going to
 
 ```nix
 {
-  programs.zen-browser.profiiles.*.settings = {
+  programs.waterfox.profiles.*.settings = {
     "browser.tabs.warnOnClose" = false;
     "browser.download.panel.shown" = false;
     # Since this is a json value, it can be nixified and translated by home-manager;
@@ -281,7 +253,7 @@ You can search for package names by going to
 
 ```nix
 {
-   programs.zen-browser.profiles.*.bookmarks = {
+   programs.waterfox.profiles.*.bookmarks = {
         force = true; # Required for nix to overwrite bookmarks on rebuild
         settings = [
           {
@@ -304,235 +276,11 @@ You can search for package names by going to
 }
 ```
 
-### Spaces
-
-> [!WARNING]
-> Spaces declaration may change your rebuild experience with Home Manager. Due
-> to limitations on how Zen handles spaces, the updating of them is done via a
-> activation script on your `home-manager-<user>.service`. This may cause the
-> service to fail, to prevent this, it is recommended to close your Zen browser
-> instance before rebuilding.
-
-- `profiles.*.spaces` (attrsOf submodule): Declare profile's \[work\]spaces.
-  - `name` (string) Name of space, defaults to submodule/attribute name.
-  - `id` (string) **Required.** UUID v4 of space. **Changing this after a
-    rebuild will re-create the space as a new one,** losing opened tabs, groups,
-    etc. If `spacesForce` is true, the space with the previous UUID will be
-    deleted.
-  - `position` (unsigned integer) Position/order of space in the left bar.
-  - `icon` (null or (string or path)) Emoji, URI or file path for icon to be
-    used as space icon.
-  - `container` (null or unsigned integer) Container ID to be used as default in
-    space.
-  - `theme.type` (nullOr string) Type of theme, defaults to "gradient".
-  - `theme.color` (listOf submodule) List of JSON colors to be used as theme:
-    - `red` (integer between 0 and 255) Red value of color (first value of "c"
-      array in JSON object).
-    - `green` (integer between 0 and 255) Green value of color (second value of
-      "c" array in JSON object).
-    - `blue` (integer between 0 and 255) Blue value of color (third value of "c"
-      array in JSON object).
-    - `custom` (boolean) Is custom color ("isCustom" in JSON object).
-    - `algorithm` (enum of "complementary", "floating" or "analogous") color
-      algorithm (defaults to "floating").
-    - `lightness` (integer) Lightness of color.
-    - `position.x` (integer) X Position of color in gradient picker on Zen
-      browser.
-    - `position.y` (integer) Y Position of color in gradient picker on Zen
-      browser.
-    - `type` (enum of "undefined" or "explicit-lightness") Type of color
-      (default to "undefined").
-  - `theme.opacity` (null or float) Opacity of theme (defaults to 0.5).
-  - `theme.rotation` (null or integer) Rotation of theme gradient (defaults to
-    null).
-  - `theme.texture` (null or float) Amount of texture of theme (defaults to
-    0.0).
-- `profiles.*.spacesForce` (boolean) Whether to delete existing spaces not
-  declared in the configuration. Recommended to make spaces fully declarative
-  (defaults to false).
-
-```nix
-{
-  programs.zen-browser = {
-    enable = true;
-    profiles."default" = {
-      containersForce = true;
-      containers = {
-        Personal = {
-          color = "purple";
-          icon = "fingerprint";
-          id = 1;
-        };
-        Work = {
-          color = "blue";
-          icon = "briefcase";
-          id = 2;
-        };
-        Shopping = {
-          color = "yellow";
-          icon = "dollarsign";
-          id = 3;
-        };
-      };
-      spacesForce = true;
-      spaces = let
-        containers = config.programs.zen-browser.profiles."default".containers;
-      in {
-        "Space" = {
-          id = "c6de089c-410d-4206-961d-ab11f988d40a";
-          position = 1000;
-        };
-        "Work" = {
-          id = "cdd10fab-4fc5-494b-9041-325e5759195b";
-          icon = "chrome://browser/skin/zen-icons/selectable/star-2.svg";
-          container = containers."Work".id;
-          position = 2000;
-        };
-        "Shopping" = {
-          id = "78aabdad-8aae-4fe0-8ff0-2a0c6c4ccc24";
-          icon = "💸";
-          container = containers."Shopping".id;
-          position = 3000;
-        };
-      };
-    };
-  };
-}
-```
-
-### Pinned Tabs (pins)
-
-You are also able to declare your pinned tabs! For more info, see
-[this PR](https://github.com/0xc000022070/zen-browser-flake/pull/132)
-
-```nix
-{
-  programs.zen-browser.profiles.default = let
-    containers = {
-      Work = {
-        color = "blue";
-        icon = "briefcase";
-        id = 1;
-      };
-      Life = {
-        color = "green";
-        icon = "tree";
-        id = 2;
-      };
-    };
-    spaces = {
-      "Rendezvous" = {
-        id = "572910e1-4468-4832-a869-0b3a93e2f165";
-        icon = "🎭";
-        position = 1000;
-        container = containers.Life.id;
-      };
-      "Github" = {
-        id = "08be3ada-2398-4e63-bb8e-f8bf9caa8d10";
-        icon = "🐙";
-        position = 2000;
-        theme = {
-          type = "gradient";
-          colors = [
-            {
-              red = 185;
-              green = 200;
-              blue = 215;
-              algorithm = "floating";
-              type = "explicit-lightness";
-            }
-          ];
-          opacity = 0.8;
-          texture = 0.5;
-        };
-      };
-      "Nix" = {
-        id = "2441acc9-79b1-4afb-b582-ee88ce554ec0";
-        icon = "❄️";
-        position = 3000;
-        theme = {
-          type = "gradient";
-          colors = [
-            {
-              red = 150;
-              green = 190;
-              blue = 230;
-              algorithm = "floating";
-              type = "explicit-lightness";
-            }
-          ];
-          opacity = 0.2;
-          texture = 0.5;
-        };
-      };
-    };
-    pins = {
-      "mail" = {
-        id = "9d8a8f91-7e29-4688-ae2e-da4e49d4a179";
-        container = containers.Life.id;
-        url = "https://outlook.live.com/mail/";
-        isEssential = true;
-        position = 101;
-      };
-      "Notion" = {
-        id = "8af62707-0722-4049-9801-bedced343333";
-        container = containers.Life.id;
-        url = "https://notion.com";
-        isEssential = true;
-        position = 102;
-      };
-      "Folo" = {
-        id = "fb316d70-2b5e-4c46-bf42-f4e82d635153";
-        container = containers.Life.id;
-        url = "https://app.folo.is/";
-        isEssential = true;
-        position = 103;
-      };
-      "Nix awesome" = {
-        id = "d85a9026-1458-4db6-b115-346746bcc692";
-        workspace = spaces.Nix.id;
-        isGroup = true;
-        isFolderCollapsed = false;
-        editedTitle = true;
-        position = 200;
-      };
-      "Nix Packages" = {
-        id = "f8dd784e-11d7-430a-8f57-7b05ecdb4c77";
-        workspace = spaces.Nix.id;
-        folderParentId = pins."Nix awesome".id;
-        url = "https://search.nixos.org/packages";
-        position = 201;
-      };
-      "Nix Options" = {
-        id = "92931d60-fd40-4707-9512-a57b1a6a3919";
-        workspace = spaces.Nix.id;
-        folderParentId = pins."Nix awesome".id;
-        url = "https://search.nixos.org/options";
-        position = 202;
-      };
-      "Home Manager Options" = {
-        id = "2eed5614-3896-41a1-9d0a-a3283985359b";
-        workspace = spaces.Nix.id;
-        folderParentId = pins."Nix awesome".id;
-        url = "https://home-manager-options.extranix.com";
-        position = 203;
-      };
-    };
-  in {
-    containersForce = true;
-    pinsForce = true;
-    spacesForce = true;
-    inherit containers pins spaces;
-    # ...
-  };
-}
-```
-
 ### userChrome.css
 
 ```nix
 {
-  programs.zen-browser.profiles.*.userChrome = ''
+  programs.waterfox.profiles.*.userChrome = ''
     #navigator-toolbox {
       background-color: #2b2b2b; /* Changes the toolbar background color */
     }
@@ -544,7 +292,7 @@ You are also able to declare your pinned tabs! For more info, see
 
 ## 1Password
 
-Zen has to be manually added to the list of browsers that 1Password will
+Waterfox has to be manually added to the list of browsers that 1Password will
 communicate with. See [this wiki article](https://wiki.nixos.org/wiki/1Password)
 for more information. To enable 1Password integration, you need to add the
 browser identifier to the file `/etc/1password/custom_allowed_browsers`.
@@ -553,8 +301,8 @@ browser identifier to the file `/etc/1password/custom_allowed_browsers`.
 environment.etc = {
   "1password/custom_allowed_browsers" = {
     text = ''
-      .zen-wrapped
-    ''; # or just "zen" if you use unwrapped package
+      .waterfox-wrapped
+    ''; # or just "waterfox" if you use unwrapped package
     mode = "0755";
   };
 };
@@ -576,7 +324,7 @@ Check the [Home Manager Reference](#home-manager-reference).
 {
   home.packages = [
     (
-      inputs.zen-browser.packages."${system}".default.override {
+      inputs.waterfox.packages."${system}".default.override {
         nativeMessagingHosts = [pkgs.firefoxpwa];
       }
     )
@@ -595,9 +343,9 @@ schemes, you can add the following configuration to your Home Manager setup:
 {
   xdg.mimeApps = let
     value = let
-      zen-browser = inputs.zen-browser.packages.${system}.beta; # or twilight
+      waterfox = inputs.waterfox.packages.${system}.default;
     in
-      zen-browser.meta.desktopFileName;
+      waterfox.meta.desktopFileName;
 
     associations = builtins.listToAttrs (map (name: {
         inherit name value;
@@ -627,32 +375,16 @@ schemes, you can add the following configuration to your Home Manager setup:
 
 ## Troubleshooting
 
-#### The requested URL returned error: 404
-
-This usually happens when the Zen team deletes a beta release from the official
-repository. They do this to keep only stable artifacts available. See
-[#105](https://github.com/0xc000022070/zen-browser-flake/issues/105#issuecomment-3243452133)
-and
-[#112](https://github.com/0xc000022070/zen-browser-flake/issues/112#issuecomment-3262519193)
-for further context.
-
-You can either revert your nix input update or wait until CI refreshes
-[sources.json](../sources.json).
-
-#### Zen not seeing my GPU
+#### Waterfox not seeing my GPU
 
 Make sure that you update your flake.lock as to sync up nixpkgs version. Or make
-zen follow your system nixpkgs by using `inputs.nixpkgs.follows = "nixpkgs"`
+waterfox follow your system nixpkgs by using `inputs.nixpkgs.follows = "nixpkgs"`
 (assuming your nixpkgs input is named nixpkgs).
-
-Check
-[No WebGL context](https://github.com/0xc000022070/zen-browser-flake/issues/86)
-for details.
 
 #### 1Password constantly requires password
 
 You may want to set `policies.DisableAppUpdate = false;` in your policies.json
-file. See [#48](https://github.com/0xc000022070/zen-browser-flake/issues/48).
+file.
 
 ## Contributing
 
