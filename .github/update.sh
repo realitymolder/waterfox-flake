@@ -49,14 +49,23 @@ update_version() {
     meta=$(jq ".[\"main\"][\"$arch-$os\"]" <sources.json)
     local_version=$(echo "$meta" | jq -r '.version')
 
+    if [ "$os" = "darwin" ]; then
+        remote_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Darwin_x86_64-aarch64/Waterfox%20$current_version.dmg"
+    else
+        remote_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Linux_x86_64/waterfox-$current_version.tar.bz2"
+    fi
+    local_url=$(echo "$meta" | jq -r '.url')
+
     echo "Checking main version @ $arch-$os... local=$local_version remote=$current_version"
 
-    if [ "$local_version" = "$current_version" ]; then
-        echo "Local main version is up to date"
+    if [ "$local_version" = "$current_version" ] && [ "$local_url" = "$remote_url" ]; then
+        echo "Local main version and URL are up to date"
         return
     fi
 
-    echo "Local main version mismatch with remote"
+    echo "Local main version or URL mismatch with remote"
+
+    download_url="$remote_url"
 
     if $only_check; then
         echo "should_update=true" >>"$GITHUB_OUTPUT"
@@ -64,15 +73,12 @@ update_version() {
     fi
 
     if [ "$os" = "darwin" ]; then
-        download_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Darwin_x86_64-aarch64/Waterfox%20$current_version.dmg"
-        # Download and compute hash manually to avoid nix prefetch issues with spaces in filename
         tmp_dir=$(mktemp -d)
         curl -sL "$download_url" -o "$tmp_dir/waterfox.dmg"
         sha256=$(sha256sum "$tmp_dir/waterfox.dmg" | cut -d' ' -f1)
         sha256="sha256-$sha256"
         rm -rf "$tmp_dir"
     else
-        download_url="https://cdn.waterfox.com/waterfox/releases/$current_version/Linux_x86_64/waterfox-$current_version.tar.bz2"
         prefetch_output=$(nix store prefetch-file --unpack --hash-type sha256 --json "$download_url" 2>&1)
         
         # Handle errors
