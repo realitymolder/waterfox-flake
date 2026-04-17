@@ -3,7 +3,7 @@
     "x86_64-linux": {
       "version": "6.6.11",
       "url": "https://cdn.waterfox.com/waterfox/releases/6.6.11/Linux_x86_64/waterfox-6.6.11.tar.bz2",
-      "sha256": "sha256-k1IYNSJyDhR5T/hbiEQl3fU4fZYj6POieaa0Ner/XFQ="
+      "sha256": "sha256-NUc5anhV1KdP8Py/fuW+2cGOOnAcAEPVNgsfoPJP9WQ="
     },
     "aarch64-darwin": {
       "version": "6.6.11",
